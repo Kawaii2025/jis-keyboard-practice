@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { layout } from './data/layout';
+import { jisKanaLayout } from './data/layout';
 import Keyboard from './components/Keyboard';
 import PracticePanel from './components/PracticePanel';
 import ReferenceGrid from './components/ReferenceGrid';
@@ -7,17 +7,15 @@ import ReferenceGrid from './components/ReferenceGrid';
 function App() {
   const [activeTab, setActiveTab] = useState('map');
 
+  // Build flat kana list from the layout rows (skip the number row).
+  // Pass this to child components that need to know all available kana.
   const kanaList = useMemo(() => {
     const list = [];
-    for (const [rowKey, keys] of Object.entries(layout)) {
-      if (rowKey === 'row0') continue;
-      for (const k of keys) {
-        if (k.norm && k.norm.trim()) {
-          list.push({ char: k.norm, shift: false, finger: k.finger, row: rowKey });
-        }
-        if (k.shift && k.shift.trim()) {
-          list.push({ char: k.shift, shift: true, finger: k.finger, row: rowKey });
-        }
+    for (const row of jisKanaLayout.rows) {
+      if (row.id === 'row0') continue; // number row has no kana practice
+      for (const k of row.keys) {
+        if (k.norm?.trim()) list.push({ char: k.norm, shift: false, finger: k.finger, row: row.id });
+        if (k.shift?.trim()) list.push({ char: k.shift, shift: true,  finger: k.finger, row: row.id });
       }
     }
     return list;
@@ -25,14 +23,7 @@ function App() {
 
   const referenceList = useMemo(() => {
     const seen = new Set();
-    const refs = [];
-    for (const item of kanaList) {
-      if (!seen.has(item.char)) {
-        seen.add(item.char);
-        refs.push(item);
-      }
-    }
-    return refs;
+    return kanaList.filter(({ char }) => (seen.has(char) ? false : seen.add(char)));
   }, [kanaList]);
 
   return (

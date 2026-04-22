@@ -1,69 +1,83 @@
-import { layout } from '../data/layout';
+import { jisKanaLayout } from '../data/layout';
 
 export function isKanaMatch(key, ch) {
   return key.norm === ch || key.shift === ch;
 }
 
-function renderSpecialKey(label, type) {
-  const style = {};
-  if (type === 'thumb') {
-    style.width = '90px';
-  }
-  if (type === 'wide') {
-    style.width = '70px';
-  }
+// ── Sub-components ─────────────────────────────────────────────────
+
+function KanaKey({ keyData, expectedChar, feedback }) {
+  const classes = ['key', keyData.finger];
+
+  if (expectedChar && isKanaMatch(keyData, expectedChar)) classes.push('highlight');
+  if (feedback.type === 'correct' && isKanaMatch(keyData, feedback.char)) classes.push('correct');
+  if (feedback.type === 'wrong'   && isKanaMatch(keyData, feedback.char)) classes.push('wrong');
 
   return (
-    <div className="key f-special" key={`${label}-${type}`} style={style}>
+    <div
+      className={classes.join(' ')}
+      data-norm={keyData.norm}
+      data-shift={keyData.shift || ''}
+    >
+      <div className="key-top">{keyData.norm}</div>
+      {keyData.shift ? <div className="key-bot">{keyData.shift}</div> : null}
+    </div>
+  );
+}
+
+function SpecialKey({ label, width }) {
+  return (
+    <div className="key f-special" style={{ width }}>
       <div className="key-top key-top-small">{label}</div>
     </div>
   );
 }
 
-export default function Keyboard({ expectedChar = '', feedback = { type: '', char: '' } }) {
-  function renderKey(key, keyIndex) {
-    const classNames = ['key', key.finger];
+// ── Main component ─────────────────────────────────────────────────
 
-    if (expectedChar && isKanaMatch(key, expectedChar)) {
-      classNames.push('highlight');
-    }
-    if (feedback.type === 'correct' && feedback.char && isKanaMatch(key, feedback.char)) {
-      classNames.push('correct');
-    }
-    if (feedback.type === 'wrong' && feedback.char && isKanaMatch(key, feedback.char)) {
-      classNames.push('wrong');
-    }
-
-    return (
-      <div
-        className={classNames.join(' ')}
-        key={`${key.norm}-${key.shift}-${keyIndex}`}
-        data-norm={key.norm}
-        data-shift={key.shift || ''}
-      >
-        <div className="key-top">{key.norm}</div>
-        {key.shift ? <div className="key-bot">{key.shift}</div> : null}
-      </div>
-    );
-  }
-
+/**
+ * Renders a kana keyboard.
+ *
+ * Props
+ *   layout      — layout config object (defaults to jisKanaLayout).
+ *                 Shape: { rows: Row[], thumbRow: SpecialKeyDef[] }
+ *   expectedChar — character to highlight
+ *   feedback     — { type: 'correct'|'wrong'|'', char: string }
+ */
+export default function Keyboard({
+  layout = jisKanaLayout,
+  expectedChar = '',
+  feedback = { type: '', char: '' },
+}) {
   return (
     <>
-      {Object.entries(layout).map(([rowKey, keys]) => (
-        <div className="kb-row" key={rowKey}>
-          {keys.map((key, index) => renderKey(key, index))}
-          {rowKey === 'row0' ? renderSpecialKey('改行', 'wide') : null}
-          {rowKey === 'row1' ? renderSpecialKey('改行', 'normal') : null}
-          {rowKey === 'row2' ? renderSpecialKey('後退', 'normal') : null}
-          {rowKey === 'row2' ? renderSpecialKey('取消', 'normal2') : null}
+      {layout.rows.map((row) => (
+        <div className="kb-row" key={row.id}>
+          {row.leading && <SpecialKey label={row.leading.label} width={row.leading.width} />}
+
+          {row.keys.map((key, i) => (
+            <KanaKey
+              key={`${row.id}-${i}`}
+              keyData={key}
+              expectedChar={expectedChar}
+              feedback={feedback}
+            />
+          ))}
+
+          {row.trailing?.map((sk, i) => (
+            <SpecialKey key={i} label={sk.label} width={sk.width} />
+          ))}
         </div>
       ))}
-      <div className="kb-row">
-        {renderSpecialKey('シフト/濁音', 'thumb')}
-        {renderSpecialKey('シフト/濁音', 'thumb2')}
-        {renderSpecialKey('無変換', 'thumb3')}
-        {renderSpecialKey('変換', 'thumb4')}
-      </div>
+
+      {layout.thumbRow && (
+        <div className="kb-row">
+          {layout.thumbRow.map((sk, i) => (
+            <SpecialKey key={i} label={sk.label} width={sk.width} />
+          ))}
+        </div>
+      )}
     </>
   );
 }
+
