@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>親指シフト キー練習</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f14;
+    --surface: #1a1a24;
+    --surface2: #22222e;
+    --border: #2e2e3e;
+    --accent: #7c6af7;
+    --accent2: #f7a26a;
+    --accent3: #6af7c4;
+    --text: #e8e8f0;
+    --text-dim: #7a7a9a;
+    --correct: #4ade80;
+    --wrong: #f87171;
+
+    --key-pink: #ffd6d6;
+    --key-yellow: #fff3d6;
+    --key-green: #d6f5e6;
+    --key-blue: #d6e8ff;
+    --key-lavender: #ead6ff;
+    --key-gray: #e8e8f0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 40px;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(124,106,247,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,106,247,0.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+  }
+
+  h1 {
+    font-size: 1.15rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    opacity: 0.6;
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .tab {
+    padding: 6px 18px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+  .tab.active {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 500;
+  }
+
+  /* ── KEYBOARD ── */
+  .keyboard-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 18px 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(124,106,247,0.08);
+    max-width: 740px;
+    width: 100%;
+  }
+
+  .row-label {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    opacity: 0.5;
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .finger-labels {
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+    margin-bottom: 8px;
+    padding: 0 2px;
+  }
+  .finger-label {
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    opacity: 0.5;
+    text-align: center;
+    width: 52px;
+    letter-spacing: 0.03em;
+  }
+
+  .kb-row {
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+    margin-bottom: 3px;
+  }
+
+  .key {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    border-radius: 7px;
+    border: 1.5px solid rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.12s;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.5);
+    user-select: none;
+    overflow: hidden;
+  }
+  .key:hover { transform: translateY(-1px); filter: brightness(1.05); }
+  .key:active { transform: translateY(1px); box-shadow: none; }
+
+  .key-top { font-size: 0.72rem; font-weight: 500; color: #333; line-height: 1; }
+  .key-bot { font-size: 0.65rem; color: #555; line-height: 1; margin-top: 2px; }
+  .key-num { font-size: 0.6rem; color: #888; position: absolute; top: 3px; right: 5px; }
+
+  /* Finger colors */
+  .f-left-pinky  { background: #ffc8c8; }
+  .f-left-ring   { background: #ffdfc8; }
+  .f-left-middle { background: #fdf5c8; }
+  .f-left-index  { background: #d4f0c8; }
+  .f-right-index { background: #c8def5; }
+  .f-right-middle{ background: #d4c8f5; }
+  .f-right-ring  { background: #f0c8f5; }
+  .f-right-pinky { background: #e8e8e8; }
+  .f-thumb       { background: #e0e0e0; }
+  .f-special     { background: #d0d0d0; color: #555; }
+
+  /* Active/highlight states */
+  .key.highlight {
+    outline: 2.5px solid var(--accent);
+    outline-offset: 1px;
+    animation: pulse 0.5s ease;
+  }
+  .key.correct { outline: 2.5px solid var(--correct); }
+  .key.wrong   { outline: 2.5px solid var(--wrong); animation: shake 0.3s ease; }
+
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+  }
+
+  /* Shift indicator */
+  .key.shift-mode .key-top { color: var(--accent); font-weight: 700; }
+  .key.shift-mode .key-bot { color: #888; }
+
+  /* ── PRACTICE AREA ── */
+  .practice-panel {
+    max-width: 740px;
+    width: 100%;
+  }
+
+  .prompt-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 14px;
+    min-height: 80px;
+    position: relative;
+  }
+  .prompt-label {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .prompt-text {
+    font-size: 1.5rem;
+    line-height: 1.6;
+    letter-spacing: 0.05em;
+    font-weight: 300;
+  }
+  .prompt-char { transition: color 0.1s; }
+  .prompt-char.done { color: var(--text-dim); }
+  .prompt-char.current {
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    animation: blink 0.8s infinite;
+  }
+  .prompt-char.err { color: var(--wrong); background: rgba(248,113,113,0.15); border-radius: 2px; }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .typed-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 1.1rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .typed-input:focus { border-color: var(--accent); }
+
+  .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-family: inherit;
+    font-size: 0.82rem;
+    cursor: pointer;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #6a58e0; }
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+
+  /* Stats */
+  .stats-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .stat-card {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-val {
+    font-size: 1.4rem;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+  }
+  .stat-label {
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* Reference mode */
+  .reference-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+    max-width: 740px;
+    width: 100%;
+  }
+  .ref-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ref-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .ref-char { font-size: 1.5rem; font-weight: 500; color: var(--text); }
+  .ref-key  { font-size: 0.65rem; color: var(--text-dim); margin-top: 4px; font-family: 'DM Mono', monospace; }
+  .ref-finger { font-size: 0.6rem; color: var(--accent); opacity: 0.7; }
+
+  /* Shift toggle */
+  .shift-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .toggle-label {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  .toggle-btn {
+    padding: 4px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .toggle-btn.on {
+    background: var(--accent2);
+    color: var(--bg);
+    border-color: var(--accent2);
+    font-weight: 600;
+  }
+
+  .section-hidden { display: none; }
+
+  .next-char-hint {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .next-char-hint span { color: var(--accent); font-weight: 600; }
+
+  .success-flash {
+    animation: successPop 0.4s ease;
+  }
+  @keyframes successPop {
+    0%  { transform: scale(1); }
+    50% { transform: scale(1.03); background: rgba(74,222,128,0.08); }
+    100%{ transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<h1>親指シフト練習</h1>
+<p class="subtitle">JIS Kana Keyboard · Oyayubi Shift Layout</p>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('map')">キーマップ</button>
+  <button class="tab" onclick="switchTab('practice')">練習</button>
+  <button class="tab" onclick="switchTab('reference')">一覧</button>
+</div>
+
+<!-- ─── KEYBOARD VISUAL ─── -->
+<div id="tab-map" class="keyboard-wrap">
+  <div class="finger-labels">
+    <div class="finger-label">左小指</div>
+    <div class="finger-label">左薬指</div>
+    <div class="finger-label">左中指</div>
+    <div class="finger-label" style="width:104px">左人差し指</div>
+    <div class="finger-label" style="width:104px">右人差し指</div>
+    <div class="finger-label">右中指</div>
+    <div class="finger-label">右薬指</div>
+    <div class="finger-label">右小指</div>
+  </div>
+
+  <!-- Row 0: numbers -->
+  <div class="kb-row" id="row-num"></div>
+  <!-- Row 1 -->
+  <div class="kb-row" id="row1"></div>
+  <!-- Row 2 -->
+  <div class="kb-row" id="row2"></div>
+  <!-- Row 3 -->
+  <div class="kb-row" id="row3"></div>
+  <!-- Row 4: space/thumb -->
+  <div class="kb-row" id="row-thumb"></div>
+</div>
+
+<!-- ─── PRACTICE ─── -->
+<div id="tab-practice" class="practice-panel section-hidden">
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-val" id="stat-score">0</div><div class="stat-label">スコア</div></div>
+    <div class="stat-card"><div class="stat-val" id="stat-acc">—</div><div class="stat-label">正確率</div></div>
+    <div class="stat-card"><div class="stat-val" id="stat-streak">0</div><div class="stat-label">連続正解</div></div>
+  </div>
+
+  <div class="shift-toggle">
+    <span class="toggle-label">モード:</span>
+    <button class="toggle-btn" id="mode-normal-btn" onclick="setPracticeMode('normal')">通常</button>
+    <button class="toggle-btn on" id="mode-both-btn" onclick="setPracticeMode('both')">通常+シフト</button>
+    <button class="toggle-btn" id="mode-quiz-btn" onclick="setPracticeMode('quiz')">単語</button>
+  </div>
+
+  <div class="prompt-box" id="prompt-box">
+    <div class="prompt-label">入力してください</div>
+    <div class="prompt-text" id="prompt-display"></div>
+  </div>
+
+  <div class="next-char-hint" id="next-hint"></div>
+
+  <div class="input-row">
+    <input type="text" class="typed-input" id="type-input" placeholder="ここに入力..." autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="btn btn-ghost" onclick="skipChar()">スキップ</button>
+    <button class="btn btn-primary" onclick="newPrompt()">次へ</button>
+  </div>
+
+  <div id="keyboard-practice" class="keyboard-wrap" style="margin-bottom:0"></div>
+</div>
+
+<!-- ─── REFERENCE ─── -->
+<div id="tab-reference" class="reference-grid section-hidden"></div>
+
+<script>
+// ─── DATA ───
+// [char_normal, char_shift, finger_class, display_top, display_bot, row, num_label]
+const keyData = [
+  // Number row
+  { pos:'r0c0', norm:'１', shift:'?',  top:'?',  bot:'１', finger:'f-left-pinky',   row:0 },
+  { pos:'r0c1', norm:'２', shift:'／', top:'／', bot:'２', finger:'f-left-ring',    row:0 },
+  { pos:'r0c2', norm:'３', shift:'〜', top:'〜', bot:'３', finger:'f-left-middle',  row:0 },
+  { pos:'r0c3', norm:'４', shift:'「', top:'「', bot:'４', finger:'f-left-index',   row:0 },
+  { pos:'r0c4', norm:'５', shift:'」', top:'」', bot:'５', finger:'f-left-index',   row:0 },
+  { pos:'r0c5', norm:'６', shift:'[',  top:'[',  bot:'６', finger:'f-right-index',  row:0 },
+  { pos:'r0c6', norm:'７', shift:']',  top:']',  bot:'７', finger:'f-right-index',  row:0 },
+  { pos:'r0c7', norm:'８', shift:'(',  top:'(',  bot:'８', finger:'f-right-middle', row:0 },
+  { pos:'r0c8', norm:'９', shift:')',  top:')',  bot:'９', finger:'f-right-ring',   row:0 },
+  { pos:'r0c9', norm:'０', shift:'',   top:'',   bot:'０', finger:'f-right-pinky',  row:0 },
+  { pos:'r0c10',norm:'—',  shift:'',   top:'—',  bot:'',  finger:'f-right-pinky',  row:0 },
+  { pos:'r0c11',norm:'¥',  shift:'',   top:'¥',  bot:'',  finger:'f-right-pinky',  row:0 },
+
+  // Row 1
+  { pos:'r1c0', norm:'あ', shift:'を', top:'を', bot:'あ', finger:'f-left-pinky',   row:1 },
+  { pos:'r1c1', norm:'え', shift:'',   top:'え', bot:'',  finger:'f-left-ring',    row:1 },
+  { pos:'r1c2', norm:'り', shift:'',   top:'り', bot:'',  finger:'f-left-middle',  row:1 },
+  { pos:'r1c3', norm:'ゃ', shift:'',   top:'ゃ', bot:'',  finger:'f-left-index',   row:1 },
+  { pos:'r1c4', norm:'れ', shift:'',   top:'れ', bot:'',  finger:'f-left-index',   row:1 },
+  { pos:'r1c5', norm:'よ', shift:'',   top:'よ', bot:'',  finger:'f-right-index',  row:1 },
+  { pos:'r1c6', norm:'に', shift:'',   top:'に', bot:'',  finger:'f-right-index',  row:1 },
+  { pos:'r1c7', norm:'る', shift:'',   top:'る', bot:'',  finger:'f-right-middle', row:1 },
+  { pos:'r1c8', norm:'ま', shift:'',   top:'ま', bot:'',  finger:'f-right-ring',   row:1 },
+  { pos:'r1c9', norm:'え', shift:'',   top:'え', bot:'',  finger:'f-right-ring',   row:1 },
+  { pos:'r1c10',norm:'』', shift:'',   top:'』', bot:'',  finger:'f-right-pinky',  row:1 },
+
+  // Row 2 (home)
+  { pos:'r2c0', norm:'を', shift:'',   top:'を', bot:'',  finger:'f-left-pinky',   row:2 },
+  { pos:'r2c1', norm:'あ', shift:'',   top:'あ', bot:'',  finger:'f-left-ring',    row:2 },
+  { pos:'r2c2', norm:'な', shift:'',   top:'な', bot:'',  finger:'f-left-middle',  row:2 },
+  { pos:'r2c3', norm:'ゆ', shift:'',   top:'ゆ', bot:'',  finger:'f-left-index',   row:2 },
+  { pos:'r2c4', norm:'も', shift:'',   top:'も', bot:'',  finger:'f-left-index',   row:2 },
+  { pos:'r2c5', norm:'み', shift:'',   top:'み', bot:'',  finger:'f-right-index',  row:2 },
+  { pos:'r2c6', norm:'お', shift:'',   top:'お', bot:'',  finger:'f-right-index',  row:2 },
+  { pos:'r2c7', norm:'の', shift:'',   top:'の', bot:'',  finger:'f-right-middle', row:2 },
+  { pos:'r2c8', norm:'き', shift:'ょ', top:'ょ', bot:'き', finger:'f-right-ring',  row:2 },
+  { pos:'r2c9', norm:'っ', shift:'',   top:'っ', bot:'',  finger:'f-right-pinky',  row:2 },
+  { pos:'r2c10',norm:'ん', shift:'',   top:'ん', bot:'',  finger:'f-right-pinky',  row:2 },
+
+  // Row 3
+  { pos:'r3c0', norm:'う', shift:'',   top:'う', bot:'',  finger:'f-left-pinky',   row:3 },
+  { pos:'r3c1', norm:'い', shift:'',   top:'い', bot:'',  finger:'f-left-ring',    row:3 },
+  { pos:'r3c2', norm:'す', shift:'',   top:'す', bot:'',  finger:'f-left-middle',  row:3 },
+  { pos:'r3c3', norm:'ろ', shift:'',   top:'ろ', bot:'',  finger:'f-left-index',   row:3 },
+  { pos:'r3c4', norm:'や', shift:'',   top:'や', bot:'',  finger:'f-left-index',   row:3 },
+  { pos:'r3c5', norm:'ふ', shift:'',   top:'ふ', bot:'',  finger:'f-right-index',  row:3 },
+  { pos:'r3c6', norm:'ぬ', shift:'',   top:'ぬ', bot:'',  finger:'f-right-index',  row:3 },
+  { pos:'r3c7', norm:'ゆ', shift:'',   top:'ゆ', bot:'',  finger:'f-right-middle', row:3 },
+  { pos:'r3c8', norm:'む', shift:'',   top:'む', bot:'',  finger:'f-right-ring',   row:3 },
+  { pos:'r3c9', norm:'わ', shift:'',   top:'わ', bot:'',  finger:'f-right-pinky',  row:3 },
+  { pos:'r3c10',norm:'お', shift:'',   top:'お', bot:'',  finger:'f-right-pinky',  row:3 },
+];
+
+// Oyayubi shift: proper layout based on image
+const layout = {
+  row0: [
+    {norm:'１',shift:'?',  finger:'f-left-pinky'},
+    {norm:'２',shift:'／', finger:'f-left-ring'},
+    {norm:'３',shift:'〜', finger:'f-left-middle'},
+    {norm:'４',shift:'「', finger:'f-left-index'},
+    {norm:'５',shift:'」', finger:'f-left-index'},
+    {norm:'６',shift:'[',  finger:'f-right-index'},
+    {norm:'７',shift:']',  finger:'f-right-index'},
+    {norm:'８',shift:'(',  finger:'f-right-middle'},
+    {norm:'９',shift:')',  finger:'f-right-ring'},
+    {norm:'０',shift:'',   finger:'f-right-pinky'},
+    {norm:'—',  shift:'',  finger:'f-right-pinky'},
+    {norm:'¥',  shift:'',  finger:'f-right-pinky'},
+  ],
+  row1: [
+    {norm:'あ', shift:'を', finger:'f-left-pinky',   label:'あ/を'},
+    {norm:'え', shift:'か', finger:'f-left-ring',    label:'え/か'},
+    {norm:'り', shift:'た', finger:'f-left-middle',  label:'り/た'},
+    {norm:'ゃ', shift:'こ', finger:'f-left-index',   label:'ゃ/こ'},
+    {norm:'れ', shift:'さ', finger:'f-left-index',   label:'れ/さ'},
+    {norm:'よ', shift:'ら', finger:'f-right-index',  label:'よ/ら'},
+    {norm:'に', shift:'ち', finger:'f-right-index',  label:'に/ち'},
+    {norm:'る', shift:'く', finger:'f-right-middle', label:'る/く'},
+    {norm:'ま', shift:'つ', finger:'f-right-ring',   label:'ま/つ'},
+    {norm:'え', shift:'',   finger:'f-right-ring',   label:'え'},
+    {norm:'』', shift:'',   finger:'f-right-pinky',  label:'』'},
+  ],
+  row2: [
+    {norm:'を', shift:'',   finger:'f-left-pinky',   label:'を'},
+    {norm:'あ', shift:'し', finger:'f-left-ring',    label:'あ/し'},
+    {norm:'な', shift:'て', finger:'f-left-middle',  label:'な/て'},
+    {norm:'ゆ', shift:'',   finger:'f-left-index',   label:'ゆ'},
+    {norm:'も', shift:'は', finger:'f-left-index',   label:'も/は'},
+    {norm:'み', shift:'は', finger:'f-right-index',  label:'み/は'},
+    {norm:'お', shift:'と', finger:'f-right-index',  label:'お/と'},
+    {norm:'の', shift:'き', finger:'f-right-middle', label:'の/き'},
+    {norm:'き', shift:'ょ', finger:'f-right-ring',   label:'き/ょ'},
+    {norm:'っ', shift:'い', finger:'f-right-pinky',  label:'っ/い'},
+    {norm:'ん', shift:'',   finger:'f-right-pinky',  label:'ん'},
+  ],
+  row3: [
+    {norm:'う', shift:'ひ', finger:'f-left-pinky',   label:'う/ひ'},
+    {norm:'い', shift:'',   finger:'f-left-ring',    label:'い'},
+    {norm:'す', shift:'',   finger:'f-left-middle',  label:'す'},
+    {norm:'ろ', shift:'や', finger:'f-left-index',   label:'ろ/や'},
+    {norm:'や', shift:'ぶ', finger:'f-left-index',   label:'や/ぶ'},
+    {norm:'ふ', shift:'へ', finger:'f-right-index',  label:'ふ/へ'},
+    {norm:'ぬ', shift:'め', finger:'f-right-index',  label:'ぬ/め'},
+    {norm:'ゆ', shift:'そ', finger:'f-right-middle', label:'ゆ/そ'},
+    {norm:'む', shift:'ね', finger:'f-right-ring',   label:'む/ね'},
+    {norm:'わ', shift:'ほ', finger:'f-right-pinky',  label:'わ/ほ'},
+    {norm:'お', shift:'',   finger:'f-right-pinky',  label:'お'},
+  ],
+};
+
+// All kana chars with position info for practice
+const kanaList = [];
+for (const [rowKey, keys] of Object.entries(layout)) {
+  if (rowKey === 'row0') continue;
+  for (const k of keys) {
+    if (k.norm && k.norm.trim()) kanaList.push({ char: k.norm, shift: false, finger: k.finger, row: rowKey });
+    if (k.shift && k.shift.trim()) kanaList.push({ char: k.shift, shift: true, finger: k.finger, row: rowKey });
+  }
+}
+
+// word prompts
+const wordPrompts = [
+  'あいうえお', 'かきくけこ', 'さしすせそ', 'たちつてと',
+  'なにぬねの', 'はひふへほ', 'まみむめも', 'やゆよ', 'らりるれろ',
+  'わをん', 'おはよう', 'ありがとう', 'にほんご', 'きょうは',
+  'なまえは', 'どうぞよろしく',
+];
+
+let currentPrompt = '';
+let currentIdx = 0;
+let score = 0, totalAttempts = 0, correctAttempts = 0, streak = 0;
+let practiceMode = 'both';
+let shiftView = false;
+
+// ─── BUILD KEYBOARD ───
+function buildKeyboard(containerId, interactive = false) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  for (const [rowKey, keys] of Object.entries(layout)) {
+    const row = document.createElement('div');
+    row.className = 'kb-row';
+
+    if (rowKey === 'row0') {
+      for (const k of keys) {
+        row.appendChild(makeKey(k, false, interactive));
+      }
+      // Add special keys
+      ['改行'].forEach(label => {
+        const sp = makeSpecialKey(label, 'wide');
+        row.appendChild(sp);
+      });
+    } else {
+      for (const k of keys) {
+        row.appendChild(makeKey(k, shiftView, interactive));
+      }
+      if (rowKey === 'row1') {
+        row.appendChild(makeSpecialKey('改行'));
+      }
+      if (rowKey === 'row2') {
+        row.appendChild(makeSpecialKey('後退'));
+        row.appendChild(makeSpecialKey('取消'));
+      }
+    }
+    container.appendChild(row);
+  }
+
+  // Thumb row
+  const thumbRow = document.createElement('div');
+  thumbRow.className = 'kb-row';
+  ['シフト／濁音','シフト／濁音','無変換','変換'].forEach(label => {
+    thumbRow.appendChild(makeSpecialKey(label, 'thumb'));
+  });
+  container.appendChild(thumbRow);
+}
+
+function makeKey(data, showShift, interactive) {
+  const div = document.createElement('div');
+  div.className = `key ${data.finger}`;
+  div.id = `key-${data.norm}${data.shift ? '-'+data.shift : ''}`;
+  div.dataset.norm = data.norm;
+  div.dataset.shift = data.shift || '';
+
+  const top = document.createElement('div');
+  top.className = 'key-top';
+  top.textContent = showShift && data.shift ? data.shift : data.norm;
+
+  const bot = document.createElement('div');
+  bot.className = 'key-bot';
+  bot.textContent = showShift && data.shift ? data.norm : data.shift;
+
+  div.appendChild(top);
+  if (data.shift) div.appendChild(bot);
+
+  if (interactive) {
+    div.addEventListener('click', () => handleKeyClick(data.norm));
+  }
+  return div;
+}
+
+function makeSpecialKey(label, type) {
+  const div = document.createElement('div');
+  div.className = 'key f-special';
+  if (type === 'thumb') div.style.width = '90px';
+  if (type === 'wide') div.style.width = '70px';
+  const t = document.createElement('div');
+  t.className = 'key-top';
+  t.style.fontSize = '0.55rem';
+  t.textContent = label;
+  div.appendChild(t);
+  return div;
+}
+
+// ─── TABS ───
+function switchTab(name) {
+  document.getElementById('tab-map').classList.add('section-hidden');
+  document.getElementById('tab-practice').classList.add('section-hidden');
+  document.getElementById('tab-reference').classList.add('section-hidden');
+  document.getElementById(`tab-${name}`).classList.remove('section-hidden');
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['map','practice','reference'][i] === name);
+  });
+  if (name === 'practice') {
+    buildKeyboard('keyboard-practice', false);
+    newPrompt();
+  }
+  if (name === 'reference') buildReference();
+}
+
+// ─── PRACTICE ───
+function setPracticeMode(mode) {
+  practiceMode = mode;
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById(`mode-${mode}-btn`).classList.add('on');
+  newPrompt();
+}
+
+function newPrompt() {
+  currentIdx = 0;
+  if (practiceMode === 'quiz') {
+    currentPrompt = wordPrompts[Math.floor(Math.random() * wordPrompts.length)];
+  } else {
+    // Generate random 8-char sequence
+    const pool = kanaList.filter(k => {
+      if (practiceMode === 'normal') return !k.shift;
+      return true;
+    });
+    currentPrompt = Array.from({length: 8}, () => pool[Math.floor(Math.random()*pool.length)].char).join('');
+  }
+  renderPrompt();
+  updateHint();
+  document.getElementById('type-input').value = '';
+  document.getElementById('type-input').focus();
+  clearHighlights();
+  highlightNextKey();
+}
+
+function renderPrompt() {
+  const display = document.getElementById('prompt-display');
+  display.innerHTML = currentPrompt.split('').map((c, i) => {
+    let cls = '';
+    if (i < currentIdx) cls = 'done';
+    else if (i === currentIdx) cls = 'current';
+    return `<span class="prompt-char ${cls}">${c}</span>`;
+  }).join('');
+}
+
+function updateHint() {
+  if (currentIdx >= currentPrompt.length) return;
+  const ch = currentPrompt[currentIdx];
+  const found = kanaList.find(k => k.char === ch);
+  const hint = document.getElementById('next-hint');
+  if (found) {
+    const fingerName = found.finger.replace('f-','').replace(/-/g,' ');
+    hint.innerHTML = `次: <span>${ch}</span> &nbsp;指: <span>${fingerName}</span>${found.shift ? ' &nbsp;<span style="color:var(--accent2)">シフト</span>' : ''}`;
+  } else {
+    hint.innerHTML = '';
+  }
+}
+
+function clearHighlights() {
+  document.querySelectorAll('#keyboard-practice .key').forEach(k => {
+    k.classList.remove('highlight','correct','wrong');
+  });
+}
+
+function highlightNextKey() {
+  if (currentIdx >= currentPrompt.length) return;
+  const ch = currentPrompt[currentIdx];
+  const found = kanaList.find(k => k.char === ch);
+  if (!found) return;
+  // find key by norm or shift
+  document.querySelectorAll('#keyboard-practice .key').forEach(k => {
+    if (k.dataset.norm === ch || k.dataset.shift === ch) {
+      k.classList.add('highlight');
+    }
+  });
+}
+
+function handleInput(e) {
+  const val = e.target.value;
+  if (!val) return;
+  const lastChar = val[val.length - 1];
+  e.target.value = '';
+
+  const expected = currentPrompt[currentIdx];
+  totalAttempts++;
+
+  clearHighlights();
+
+  if (lastChar === expected) {
+    correctAttempts++;
+    streak++;
+    score += 10 + Math.min(streak * 2, 20);
+    // Show correct flash
+    document.querySelectorAll('#keyboard-practice .key').forEach(k => {
+      if (k.dataset.norm === expected || k.dataset.shift === expected) {
+        k.classList.add('correct');
+        setTimeout(() => k.classList.remove('correct'), 400);
+      }
+    });
+    currentIdx++;
+    if (currentIdx >= currentPrompt.length) {
+      document.getElementById('prompt-box').classList.add('success-flash');
+      setTimeout(() => {
+        document.getElementById('prompt-box').classList.remove('success-flash');
+        newPrompt();
+      }, 600);
+    } else {
+      renderPrompt();
+      updateHint();
+      highlightNextKey();
+    }
+  } else {
+    streak = 0;
+    document.querySelectorAll('#keyboard-practice .key').forEach(k => {
+      if (k.dataset.norm === expected || k.dataset.shift === expected) {
+        k.classList.add('wrong');
+        setTimeout(() => k.classList.remove('wrong'), 400);
+      }
+    });
+    // Also show what was actually typed
+    renderPrompt();
+  }
+
+  updateStats();
+}
+
+function skipChar() {
+  if (currentIdx < currentPrompt.length) {
+    streak = 0;
+    currentIdx++;
+    if (currentIdx >= currentPrompt.length) newPrompt();
+    else { renderPrompt(); updateHint(); clearHighlights(); highlightNextKey(); }
+    updateStats();
+  }
+}
+
+function updateStats() {
+  document.getElementById('stat-score').textContent = score;
+  const acc = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : '—';
+  document.getElementById('stat-acc').textContent = totalAttempts > 0 ? acc + '%' : '—';
+  document.getElementById('stat-streak').textContent = streak;
+}
+
+// ─── REFERENCE ───
+function buildReference() {
+  const container = document.getElementById('tab-reference');
+  container.innerHTML = '';
+  const seen = new Set();
+  for (const k of kanaList) {
+    if (!seen.has(k.char)) {
+      seen.add(k.char);
+      const card = document.createElement('div');
+      card.className = 'ref-card';
+      const fingerName = k.finger.replace('f-','').replace(/-/g,' ');
+      card.innerHTML = `<div class="ref-char">${k.char}</div><div class="ref-key">${k.shift ? '⇧ シフト' : '通常'}</div><div class="ref-finger">${fingerName}</div>`;
+      container.appendChild(card);
+    }
+  }
+}
+
+// ─── INIT ───
+buildKeyboard('tab-map', false);
+document.getElementById('type-input').addEventListener('input', handleInput);
+</script>
+</body>
+</html>
