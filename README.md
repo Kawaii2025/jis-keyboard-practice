@@ -96,6 +96,7 @@ src/
 
 - キーマップと練習画面のキーボードは `KeyboardEvent.code` を使って物理キー入力に反応します
 - 最上段のキー対応は JIS キーボード位置に合わせて調整しています
+- キー配列マッピングは **MacBook** の JIS キーボードレイアウトを前提にしています
 - 練習用の入力欄は UI 上に表示されますが、テキストボックス自体は直接編集できません
 - 練習モードではグローバルなキー入力を受け取り、表示欄へ反映します
 
@@ -190,6 +191,7 @@ src/
 
 - The key map and practice keyboard react to physical key presses using `KeyboardEvent.code`
 - The top-row mapping is aligned for JIS keyboard positions
+- Key mapping is designed for the **MacBook** JIS keyboard layout
 - Practice input is displayed in the UI but is not directly editable in the text field
 - Printable input is captured globally for practice mode and reflected in the display box
 
