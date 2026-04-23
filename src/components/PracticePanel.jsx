@@ -1,10 +1,13 @@
 import { usePractice } from '../hooks/usePractice';
+import { useReactiveKeyboard } from '../hooks/useReactiveKeyboard';
 import Keyboard from './Keyboard';
 import StatsRow from './StatsRow';
 import ModeToggle from './ModeToggle';
 import { PromptBox, NextCharHint } from './PromptDisplay';
 
 export default function PracticePanel({ kanaList }) {
+  const activeKey = useReactiveKeyboard(true);
+
   const {
     practiceMode,
     currentPrompt,
@@ -55,7 +58,7 @@ export default function PracticePanel({ kanaList }) {
       </div>
 
       <div className="keyboard-wrap no-bottom-margin">
-        <Keyboard expectedChar={expectedChar} feedback={feedback} />
+        <Keyboard expectedChar={expectedChar} feedback={feedback} activeKey={activeKey} />
       </div>
     </div>
   );

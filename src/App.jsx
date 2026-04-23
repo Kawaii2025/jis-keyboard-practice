@@ -1,81 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { jisKanaLayout } from './data/layout';
 import Keyboard from './components/Keyboard';
 import PracticePanel from './components/PracticePanel';
 import ReferenceGrid from './components/ReferenceGrid';
-
-const codeRows = {
-  row0: [
-    'Backquote',
-    'Digit1',
-    'Digit2',
-    'Digit3',
-    'Digit4',
-    'Digit5',
-    'Digit6',
-    'Digit7',
-    'Digit8',
-    'Digit9',
-    'Digit0',
-    'Minus',
-    'Equal',
-  ],
-  row1: [
-    'KeyQ',
-    'KeyW',
-    'KeyE',
-    'KeyR',
-    'KeyT',
-    'KeyY',
-    'KeyU',
-    'KeyI',
-    'KeyO',
-    'KeyP',
-    'BracketLeft',
-    'BracketRight',
-  ],
-  row2: [
-    'KeyA',
-    'KeyS',
-    'KeyD',
-    'KeyF',
-    'KeyG',
-    'KeyH',
-    'KeyJ',
-    'KeyK',
-    'KeyL',
-    'Semicolon',
-    'Quote',
-    'Backslash',
-  ],
-  row3: [
-    'KeyZ',
-    'KeyX',
-    'KeyC',
-    'KeyV',
-    'KeyB',
-    'KeyN',
-    'KeyM',
-    'Comma',
-    'Period',
-    'Slash',
-    'IntlRo',
-  ],
-};
-
-function findLayoutPosition(eventCode) {
-  for (const [rowId, codes] of Object.entries(codeRows)) {
-    const keyIndex = codes.indexOf(eventCode);
-    if (keyIndex >= 0) {
-      return { rowId, keyIndex };
-    }
-  }
-  return null;
-}
+import { useReactiveKeyboard } from './hooks/useReactiveKeyboard';
 
 function App() {
   const [activeTab, setActiveTab] = useState('map');
-  const [activeKey, setActiveKey] = useState(null);
+  const activeKey = useReactiveKeyboard(activeTab === 'map');
 
   // Build flat kana list from the layout rows (skip the number row).
   // Pass this to child components that need to know all available kana.
@@ -95,32 +27,6 @@ function App() {
     const seen = new Set();
     return kanaList.filter(({ char }) => (seen.has(char) ? false : seen.add(char)));
   }, [kanaList]);
-
-  useEffect(() => {
-    if (activeTab !== 'map') {
-      setActiveKey(null);
-      return;
-    }
-
-    const onKeyDown = (event) => {
-      if (event.repeat) return;
-      const matched = findLayoutPosition(event.code);
-      if (!matched) return;
-      setActiveKey({ ...matched, shift: event.shiftKey });
-    };
-
-    const onKeyUp = () => {
-      setActiveKey(null);
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
-
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('keyup', onKeyUp);
-    };
-  }, [activeTab]);
 
   return (
     <div className="app-shell">
