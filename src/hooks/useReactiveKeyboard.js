@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 
 const codeRows = {
   row0: [
-    'Backquote',
     'Digit1',
     'Digit2',
     'Digit3',
@@ -15,6 +14,7 @@ const codeRows = {
     'Digit0',
     'Minus',
     'Equal',
+    'IntlYen',
   ],
   row1: [
     'KeyQ',
@@ -69,13 +69,18 @@ function findLayoutPosition(eventCode) {
   return null;
 }
 
-export function useReactiveKeyboard(enabled = true, onInputChar) {
+export function useReactiveKeyboard(enabled = true, onInputChar, onInputDelete) {
   const [activeKey, setActiveKey] = useState(null);
   const inputCharRef = useRef(onInputChar);
+  const inputDeleteRef = useRef(onInputDelete);
 
   useEffect(() => {
     inputCharRef.current = onInputChar;
   }, [onInputChar]);
+
+  useEffect(() => {
+    inputDeleteRef.current = onInputDelete;
+  }, [onInputDelete]);
 
   useEffect(() => {
     if (!enabled) {
@@ -85,6 +90,18 @@ export function useReactiveKeyboard(enabled = true, onInputChar) {
 
     const onKeyDown = (event) => {
       if (event.repeat) return;
+
+      const isDeleteKey =
+        (event.key === 'Backspace' || event.key === 'Delete') &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey;
+
+      if (isDeleteKey && inputDeleteRef.current) {
+        event.preventDefault();
+        inputDeleteRef.current();
+      }
+
       const matched = findLayoutPosition(event.code);
       if (!matched) return;
       setActiveKey({ ...matched, shift: event.shiftKey });

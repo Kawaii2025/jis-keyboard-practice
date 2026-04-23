@@ -22,10 +22,11 @@ export default function PracticePanel({ kanaList }) {
     nextPrompt,
     handleSkip,
     handleVirtualInputChar,
+    handleVirtualDelete,
     changeMode,
   } = usePractice(kanaList);
 
-  const activeKey = useReactiveKeyboard(true, handleVirtualInputChar);
+  const activeKey = useReactiveKeyboard(true, handleVirtualInputChar, handleVirtualDelete);
 
   return (
     <div className="practice-panel">

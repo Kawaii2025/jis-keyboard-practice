@@ -93,6 +93,10 @@ export function usePractice(kanaList) {
     handleTypedChar(ch);
   }
 
+  function handleVirtualDelete() {
+    setInputValue((prev) => prev.slice(0, -1));
+  }
+
   function handleInputChange(event) {
     const val = event.target.value;
     setInputValue(val);
@@ -136,6 +140,7 @@ export function usePractice(kanaList) {
     handleSkip,
     handleInputChange,
     handleVirtualInputChar,
+    handleVirtualDelete,
     changeMode,
   };
 }
