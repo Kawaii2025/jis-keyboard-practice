@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const codeRows = {
   row0: [
@@ -69,8 +69,13 @@ function findLayoutPosition(eventCode) {
   return null;
 }
 
-export function useReactiveKeyboard(enabled = true) {
+export function useReactiveKeyboard(enabled = true, onInputChar) {
   const [activeKey, setActiveKey] = useState(null);
+  const inputCharRef = useRef(onInputChar);
+
+  useEffect(() => {
+    inputCharRef.current = onInputChar;
+  }, [onInputChar]);
 
   useEffect(() => {
     if (!enabled) {
@@ -83,6 +88,17 @@ export function useReactiveKeyboard(enabled = true) {
       const matched = findLayoutPosition(event.code);
       if (!matched) return;
       setActiveKey({ ...matched, shift: event.shiftKey });
+
+      const isPrintable =
+        event.key.length === 1 &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.isComposing;
+
+      if (isPrintable && inputCharRef.current) {
+        inputCharRef.current(event.key);
+      }
     };
 
     const clearActiveKey = () => {

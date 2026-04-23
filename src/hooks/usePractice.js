@@ -88,9 +88,14 @@ export function usePractice(kanaList) {
     else handleWrong();
   }
 
+  function handleVirtualInputChar(ch) {
+    setInputValue((prev) => `${prev}${ch}`);
+    handleTypedChar(ch);
+  }
+
   function handleInputChange(event) {
     const val = event.target.value;
-    setInputValue('');
+    setInputValue(val);
     if (val) handleTypedChar(val[val.length - 1]);
   }
 
@@ -130,6 +135,7 @@ export function usePractice(kanaList) {
     nextPrompt,
     handleSkip,
     handleInputChange,
+    handleVirtualInputChar,
     changeMode,
   };
 }

@@ -6,8 +6,6 @@ import ModeToggle from './ModeToggle';
 import { PromptBox, NextCharHint } from './PromptDisplay';
 
 export default function PracticePanel({ kanaList }) {
-  const activeKey = useReactiveKeyboard(true);
-
   const {
     practiceMode,
     currentPrompt,
@@ -23,9 +21,11 @@ export default function PracticePanel({ kanaList }) {
     inputRef,
     nextPrompt,
     handleSkip,
-    handleInputChange,
+    handleVirtualInputChar,
     changeMode,
   } = usePractice(kanaList);
+
+  const activeKey = useReactiveKeyboard(true, handleVirtualInputChar);
 
   return (
     <div className="practice-panel">
@@ -43,7 +43,7 @@ export default function PracticePanel({ kanaList }) {
           type="text"
           className="typed-input"
           value={inputValue}
-          onChange={handleInputChange}
+          readOnly
           placeholder="ここに入力..."
           autoComplete="off"
           autoCorrect="off"
