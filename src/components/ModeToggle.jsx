@@ -1,6 +1,7 @@
 const MODES = [
   { id: 'normal', label: '通常' },
   { id: 'both', label: '通常+シフト' },
+  { id: 'gojuon', label: '五十音順' },
   { id: 'quiz', label: '単語' },
 ];
 

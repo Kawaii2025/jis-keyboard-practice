@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { wordPrompts } from '../data/layout';
+import { gojuonPrompt, wordPrompts } from '../data/layout';
 
 /**
  * Encapsulates all state and logic for the practice session.
@@ -36,6 +36,9 @@ export function usePractice(kanaList) {
   function buildPrompt(mode) {
     if (mode === 'quiz') {
       return wordPrompts[Math.floor(Math.random() * wordPrompts.length)];
+    }
+    if (mode === 'gojuon') {
+      return gojuonPrompt;
     }
     const pool = kanaList.filter((k) => (mode === 'normal' ? !k.shift : true));
     return Array.from({ length: 8 }, () => pool[Math.floor(Math.random() * pool.length)].char).join('');
