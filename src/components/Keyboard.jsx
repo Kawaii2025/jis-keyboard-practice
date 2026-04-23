@@ -6,12 +6,13 @@ export function isKanaMatch(key, ch) {
 
 // ── Sub-components ─────────────────────────────────────────────────
 
-function KanaKey({ keyData, expectedChar, feedback }) {
+function KanaKey({ keyData, expectedChar, feedback, isActive }) {
   const classes = ['key', keyData.finger];
 
   if (expectedChar && isKanaMatch(keyData, expectedChar)) classes.push('highlight');
   if (feedback.type === 'correct' && isKanaMatch(keyData, feedback.char)) classes.push('correct');
   if (feedback.type === 'wrong'   && isKanaMatch(keyData, feedback.char)) classes.push('wrong');
+  if (isActive) classes.push('active-press');
 
   return (
     <div
@@ -48,6 +49,7 @@ export default function Keyboard({
   layout = jisKanaLayout,
   expectedChar = '',
   feedback = { type: '', char: '' },
+  activeKey = null,
 }) {
   return (
     <>
@@ -61,6 +63,7 @@ export default function Keyboard({
               keyData={key}
               expectedChar={expectedChar}
               feedback={feedback}
+              isActive={Boolean(activeKey && activeKey.rowId === row.id && activeKey.keyIndex === i)}
             />
           ))}
 
